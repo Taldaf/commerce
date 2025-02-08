@@ -1,1 +1,1 @@
-rootProject.name = "commerce.core"
+rootProject.name = "commerce-core"
