@@ -9,9 +9,15 @@ import org.taldaf.commerce.core.item.domain.Item
 
 @Entity
 class OrderItem (
-    @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
-    val order: Order,
+    val quantity: Int,
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
     val item: Item,
-): PrimaryKeyEntity()
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
+    private var order: Order? = null,
+): PrimaryKeyEntity() {
+    internal fun order(order: Order) {
+        this.order = order
+    }
+}
