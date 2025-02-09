@@ -1,7 +1,6 @@
 spring:
   datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/commerce
+    url: jdbc:postgresql://localhost:5432/taldaf-commerce
     username: postgres
     password: 1234
 
