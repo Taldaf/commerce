@@ -1,0 +1,17 @@
+name: "Build and Deploy"
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+job:
+  build:
+    runs-on: oracle-linux
+
+    steps: 
+    
+    
