@@ -7,7 +7,7 @@ data class ItemDto(
     val name: String,
     val price: Double,
     val quantity: Int,
-    val description: String,
+    val description: String?,
     val seller: UserDto
 ) {
     companion object {
