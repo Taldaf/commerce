@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.taldaf.commerce.core.item.domain.Item
 import org.taldaf.commerce.core.item.model.ItemDto
 import org.taldaf.commerce.core.item.repository.ItemRepository
 

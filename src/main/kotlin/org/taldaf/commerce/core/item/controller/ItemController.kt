@@ -21,7 +21,7 @@ class ItemController(
 ) {
     @PostMapping("/item")
     fun postItem(itemPostDto: ItemPostDto): ItemDto {
-        return itemCommandService.saveItem(itemPostDto);
+        return itemCommandService.saveItem(itemPostDto)
     }
 
     @GetMapping("/item")
