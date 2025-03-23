@@ -1,8 +1,7 @@
-package org.taldaf.commerce.core.item.service;
+package org.taldaf.commerce.core.item.service
 
-import org.taldaf.commerce.core.item.model.ItemDto;
+import org.taldaf.commerce.core.item.model.ItemDto
 
-public interface ItemQueryService {
-
-    ItemDto getItem(Long itemId);
+interface ItemQueryService {
+    fun getItem(itemId: Long): ItemDto
 }
