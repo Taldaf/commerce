@@ -1,11 +1,16 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/taldaf-commerce
-    username: postgres
-    password: 1234
+    url: jdbc:postgresql://localhost:5432/taldaf_commerce
+    username: daou
+    password: daou
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     show-sql: true
     database: postgresql
+
+  data:
+    web:
+      pageable:
+        max-page-size: 100
