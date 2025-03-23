@@ -16,11 +16,7 @@ class ItemQueryServiceImpl(
     @Transactional(readOnly = true)
     override fun getItem(itemId: Long): ItemDto {
         return itemRepository.findById(itemId)
-            .map { item: Item? ->
-                ItemDto.fromEntity(
-                    item!!
-                )
-            }
+            .map { item -> ItemDto.fromEntity(item) }
             .orElseThrow { RuntimeException("Item not found") }
     }
 }
