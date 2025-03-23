@@ -12,7 +12,7 @@ class Item(
     var name: String,
     var price: Double,
     var quantity: Int,
-    var description: String,
+    var description: String? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seller_id")
