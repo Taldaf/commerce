@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/taldaf_commerce
+    username: daou
+    password: daou
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true

@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: commerce-core
+
+  data:
+    web:
+      pageable:
+        max-page-size: 100
+
+  jpa:
+    open-in-view: false
+
+# Swagger 설정
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  app-name: Commerce Core API
+  app-version: 0.0.1
+  app-description: Commerce Core API Documentation
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+  packages-to-scan: org.taldaf.commerce.core
