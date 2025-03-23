@@ -6,11 +6,5 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: validate
     show-sql: true
-    database: postgresql
-
-  data:
-    web:
-      pageable:
-        max-page-size: 100
