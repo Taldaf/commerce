@@ -64,7 +64,14 @@ jobs:
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
         restore-keys: |
           ${{ runner.os }}-gradle-
-        
+
+    # DB 정보 업데이트
+    - name: Update application.yml with secrets
+      run: |
+        sed -i 's|{{dburl}}|${{ secrets.DB_URL }}|g' src/main/resources/application-${{ github.event.inputs.spring_profile }}.yml
+        sed -i 's|{{dbusername}}|${{ secrets.DB_USERNAME }}|g' src/main/resources/application-${{ github.event.inputs.spring_profile }}.yml
+        sed -i 's|{{dbpassword}}|${{ secrets.DB_PASSWORD }}|g' src/main/resources/application-${{ github.event.inputs.spring_profile }}.yml
+
     # Gradle로 프로젝트 빌드 (테스트 제외)
     - name: Build with Gradle
       run: ./gradlew build -x test
@@ -127,7 +134,7 @@ jobs:
         username: ${{ secrets.SSH_USERNAME }}
         password: ${{ secrets.SSH_PRIVATE_KEY }}
         source: ${{ env.JAR_FILE }}
-        target: /opt/backend/app/
+        target: /opt/backend/jar/
         
     # 첫 번째 인스턴스에서 애플리케이션 재시작
     - name: Restart application on instance 1
