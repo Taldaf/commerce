@@ -81,7 +81,7 @@ jobs:
     # DB 정보 업데이트
     - name: Update application.yml with secrets
       run: |
-        sed -i 's|{{dburl}}|${{ secrets.DB_URL }}|g' src/main/resources/application-${{ env.SPRING_PROFILE }}".yml
+        sed -i 's|{{dburl}}|${{ secrets.DB_URL }}|g' src/main/resources/application-${{ env.SPRING_PROFILE }}.yml
         sed -i 's|{{dbusername}}|${{ secrets.DB_USERNAME }}|g' src/main/resources/application-${{ env.SPRING_PROFILE }}.yml
         sed -i 's|{{dbpassword}}|${{ secrets.DB_PASSWORD }}|g' src/main/resources/application-${{ env.SPRING_PROFILE }}.yml
 
