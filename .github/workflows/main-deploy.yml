@@ -129,7 +129,7 @@ jobs:
 
     - name: Set JAR file path
       run: |
-        echo "JAR_FILE=${{ needs.build.outputs.jar_file }}" >> $GITHUB_ENV
+        echo "JAR_FILE=build/${{ needs.build.outputs.jar_file }}" >> $GITHUB_ENV
 
     - name: echo JAR file path
       run: echo ${{ env.JAR_FILE }}
