@@ -97,7 +97,7 @@ jobs:
     - name: Set JAR file name
       id: set-jar-file-name
       run: |
-        echo "jar_file=$(ls build/libs/ | grep '.jar$' | head -n 1)" >> $GITHUB_OUTPUT
+        JAR_NAME=$(ls build/libs/ | grep -v '\-plain.jar' | grep '.jar$' | head -n 1)
 
     # JAR 파일 생성
     - name: Build JAR file
@@ -117,7 +117,7 @@ jobs:
         path: build/libs/*.jar
         retention-days: 1
     outputs:
-        JAR_FILE: ${{ steps.set-jar-file-name.outputs.jar_file }}
+        jar_file: ${{ steps.set-jar-file-name.outputs.jar_file }}
 
   # 배포 작업 정의
   deploy:
@@ -129,7 +129,7 @@ jobs:
 
     - name: Set JAR file path
       run: |
-        echo "${{ needs.build.outputs.JAR_FILE }}" >> $GITHUB_ENV
+        echo "JAR_FILE=${{ needs.build.outputs.jar_file }}" >> $GITHUB_ENV
 
     - name: echo JAR file path
       run: echo ${{ env.JAR_FILE }}
