@@ -130,7 +130,9 @@ jobs:
     - name: Set JAR file path
       run: |
         echo "${{ needs.build.outputs.JAR_FILE }}" >> $GITHUB_ENV
-        echo "JAR 파일 경로: ${{ env.JAR_FILE }}"
+
+    - name: echo JAR file path
+      run: echo ${{ env.JAR_FILE }}
 
     # 빌드 아티팩트 다운로드
     - name: Download build artifact
