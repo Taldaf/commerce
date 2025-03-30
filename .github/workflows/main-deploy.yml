@@ -94,9 +94,10 @@ jobs:
       run: ./gradlew test -Dspring.profiles.active=test
 
     # JAR 파일 경로 설정
-    - name: Set JAR file path
+    - name: Set JAR file name
+      id: set-jar-file-name
       run: |
-        echo "JAR_FILE=build/libs/$(ls build/libs/ | grep '.jar$' | head -n 1)" >> $GITHUB_ENV
+        echo "jar_file=$(ls build/libs/ | grep '.jar$' | head -n 1)" >> $GITHUB_OUTPUT
 
     # JAR 파일 생성
     - name: Build JAR file
@@ -115,7 +116,9 @@ jobs:
         name: app-jar
         path: build/libs/*.jar
         retention-days: 1
-  
+    outputs:
+        JAR_FILE: ${{ steps.set-jar-file-name.outputs.jar_file }}
+
   # 배포 작업 정의
   deploy:
     needs: build  # 빌드 작업 완료 후 실행
@@ -123,6 +126,12 @@ jobs:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'  # 푸시 또는 수동 실행 시에만 배포
     
     steps:
+
+    - name: Set JAR file path
+      run: |
+        echo "${{ needs.build.outputs.JAR_FILE }}" >> $GITHUB_ENV
+        echo "JAR 파일 경로: ${{ env.JAR_FILE }}"
+
     # 빌드 아티팩트 다운로드
     - name: Download build artifact
       uses: actions/download-artifact@v4
@@ -153,7 +162,6 @@ jobs:
         username: ${{ secrets.SSH_USERNAME }}
         password: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          script: |
           cd /opt/backend/jar
           JAR_FILE=$(basename ${{ env.JAR_FILE }})
               
@@ -182,7 +190,7 @@ jobs:
       with:
         host: ${{ secrets.INSTANCE2_IP }}
         username: ${{ secrets.SSH_USERNAME }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        password: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
           cd /opt/backend/jar
           JAR_FILE=$(basename ${{ env.JAR_FILE }})
