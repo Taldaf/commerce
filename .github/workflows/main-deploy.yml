@@ -1,5 +1,6 @@
 name: "Build and Deploy"
 
+# 워크플로우 트리거 조건 정의
 on:
   push:
     branches:
@@ -7,11 +8,173 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:  # 수동 실행 옵션
+    inputs:
+      branch:
+        description: '배포할 브랜치'
+        required: true
+        default: 'main'
+      deploy_to_instance1:
+        description: '1번 인스턴스에 배포'
+        type: boolean
+        default: true
+      deploy_to_instance2:
+        description: '2번 인스턴스에 배포'
+        type: boolean
+        default: true
+      spring_profile:
+        description: '사용할 Spring 프로필 (dev/prod)'
+        type: choice
+        options:
+          - dev
+          - prod
+        default: 'dev'
 
-job:
+jobs:
+  # 빌드 작업 정의
   build:
-    runs-on: oracle-linux
-
-    steps: 
+    runs-on: ubuntu-latest
     
+    steps:
+    # 코드 체크아웃
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.inputs.branch || 'main' }}
+      
+    # JDK 21 설정
+    - name: Set up JDK 21
+      uses: actions/setup-java@v3
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: gradle
+        
+    # Gradle 래퍼 검증
+    - name: Validate Gradle wrapper
+      uses: gradle/wrapper-validation-action@v1
     
+    # Gradle 캐시 설정 (빌드 속도 향상)
+    - name: Set up Gradle cache
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+        
+    # Gradle로 프로젝트 빌드 (테스트 제외)
+    - name: Build with Gradle
+      run: ./gradlew build -x test
+      
+    # 테스트 실행
+    - name: Run tests
+      run: ./gradlew test
+      
+    # JAR 파일 생성
+    - name: Build JAR file
+      run: ./gradlew bootJar
+      
+    # 생성된 아티팩트 확인
+    - name: List generated artifacts
+      run: |
+        echo "Listing build/libs directory:"
+        ls -la build/libs/
+      
+    # 빌드 아티팩트 업로드 (배포 작업에서 사용)
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: app-jar
+        path: build/libs/*.jar
+        retention-days: 1
+  
+  # 배포 작업 정의
+  deploy:
+    needs: build  # 빌드 작업 완료 후 실행
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'  # 푸시 또는 수동 실행 시에만 배포
+    
+    steps:
+    # Spring 프로필 결정
+    - name: Determine Spring profile
+      run: |
+        if [ "${{ github.event.inputs.spring_profile }}" != "" ]; then
+          echo "SPRING_PROFILE=${{ github.event.inputs.spring_profile }}" >> $GITHUB_ENV
+        else
+          echo "SPRING_PROFILE=dev" >> $GITHUB_ENV
+        fi
+        echo "사용할 Spring 프로필: ${{ env.SPRING_PROFILE }}"
+    
+    # 빌드 아티팩트 다운로드
+    - name: Download build artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: app-jar
+        path: ./build
+        
+    # 파일 목록 확인
+    - name: List files
+      run: ls -la ./build
+    
+    - name: Deploy to instance 1
+      if: github.event_name == 'push' || github.event.inputs.deploy_to_instance1 == 'true'
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.INSTANCE1_IP }}
+        username: ${{ secrets.SSH_USERNAME }}
+        password: ${{ secrets.SSH_PRIVATE_KEY }}
+        source: ${{ env.JAR_FILE }}
+        target: /opt/backend/app/
+        
+    # 첫 번째 인스턴스에서 애플리케이션 재시작
+    - name: Restart application on instance 1
+      if: github.event_name == 'push' || github.event.inputs.deploy_to_instance1 == 'true'
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.INSTANCE1_IP }}
+        username: ${{ secrets.SSH_USERNAME }}
+        password: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          script: |
+          cd /opt/backend/jar
+          JAR_FILE=$(basename ${{ env.JAR_FILE }})
+              
+          # 새 JAR 파일 복사
+          sudo cp $JAR_FILE commerce-core.jar
+          
+          # 서비스 시작
+          sudo systemctl restart commerce.service
+          echo "인스턴스 1에 애플리케이션 배포 및 재시작 완료"
+          
+    # 두 번째 인스턴스에 배포
+    - name: Deploy to instance 2
+      if: github.event_name == 'push' || github.event.inputs.deploy_to_instance2 == 'true'
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.INSTANCE2_IP }}
+        username: ${{ secrets.SSH_USERNAME }}
+        password: ${{ secrets.SSH_PRIVATE_KEY }}
+        source: ${{ env.JAR_FILE }}
+        target: /opt/backend/jar/
+        
+    # 두 번째 인스턴스에서 애플리케이션 재시작
+    - name: Restart application on instance 2
+      if: github.event_name == 'push' || github.event.inputs.deploy_to_instance2 == 'true'
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.INSTANCE2_IP }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          cd /opt/backend/jar
+          JAR_FILE=$(basename ${{ env.JAR_FILE }})
+              
+          # 새 JAR 파일 복사
+          sudo cp $JAR_FILE commerce-core.jar
+          
+          # 서비스 시작
+          sudo systemctl restart commerce.service
+          echo "인스턴스 2에 애플리케이션 배포 및 재시작 완료"
