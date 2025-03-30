@@ -75,12 +75,15 @@ jobs:
         fi
         echo "사용할 Spring 프로필: ${{ env.SPRING_PROFILE }}"
 
+    - name: echo Spring profile
+      run: echo ${{ env.SPRING_PROFILE }}
+
     # DB 정보 업데이트
     - name: Update application.yml with secrets
       run: |
-        sed -i 's|{{dburl}}|${{ secrets.DB_URL }}|g' src/main/resources/application-${{ github.event.inputs.spring_profile }}.yml
-        sed -i 's|{{dbusername}}|${{ secrets.DB_USERNAME }}|g' src/main/resources/application-${{ github.event.inputs.spring_profile }}.yml
-        sed -i 's|{{dbpassword}}|${{ secrets.DB_PASSWORD }}|g' src/main/resources/application-${{ github.event.inputs.spring_profile }}.yml
+        sed -i 's|{{dburl}}|${{ secrets.DB_URL }}|g' src/main/resources/application-${{ env.SPRING_PROFILE }}".yml
+        sed -i 's|{{dbusername}}|${{ secrets.DB_USERNAME }}|g' src/main/resources/application-${{ env.SPRING_PROFILE }}.yml
+        sed -i 's|{{dbpassword}}|${{ secrets.DB_PASSWORD }}|g' src/main/resources/application-${{ env.SPRING_PROFILE }}.yml
 
     # Gradle로 프로젝트 빌드 (테스트 제외)
     - name: Build with Gradle
