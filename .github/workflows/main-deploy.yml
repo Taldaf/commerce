@@ -97,7 +97,7 @@ jobs:
     - name: Set JAR file name
       id: set-jar-file-name
       run: |
-        JAR_NAME=$(ls build/libs/ | grep -v '\-plain.jar' | grep '.jar$' | head -n 1)
+        echo "jar_file=$(ls build/libs/ | grep -v '\-plain.jar' | grep '.jar$' | head -n 1)" >> $GITHUB_OUTPUT
 
     # JAR 파일 생성
     - name: Build JAR file
