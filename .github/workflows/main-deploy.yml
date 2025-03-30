@@ -85,7 +85,7 @@ jobs:
       
     # 빌드 아티팩트 업로드 (배포 작업에서 사용)
     - name: Upload build artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: app-jar
         path: build/libs/*.jar
@@ -110,7 +110,7 @@ jobs:
     
     # 빌드 아티팩트 다운로드
     - name: Download build artifact
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: app-jar
         path: ./build
