@@ -65,6 +65,16 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-gradle-
 
+    # Spring 프로필 결정
+    - name: Determine Spring profile
+      run: |
+        if [ "${{ github.event.inputs.spring_profile }}" != "" ]; then
+          echo "SPRING_PROFILE=${{ github.event.inputs.spring_profile }}" >> $GITHUB_ENV
+        else
+          echo "SPRING_PROFILE=dev" >> $GITHUB_ENV
+        fi
+        echo "사용할 Spring 프로필: ${{ env.SPRING_PROFILE }}"
+
     # DB 정보 업데이트
     - name: Update application.yml with secrets
       run: |
@@ -79,7 +89,12 @@ jobs:
     # 테스트 실행
     - name: Run tests
       run: ./gradlew test -Dspring.profiles.active=test
-      
+
+    # JAR 파일 경로 설정
+    - name: Set JAR file path
+      run: |
+        echo "JAR_FILE=build/libs/$(ls build/libs/ | grep '.jar$' | head -n 1)" >> $GITHUB_ENV
+
     # JAR 파일 생성
     - name: Build JAR file
       run: ./gradlew bootJar
@@ -105,16 +120,6 @@ jobs:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'  # 푸시 또는 수동 실행 시에만 배포
     
     steps:
-    # Spring 프로필 결정
-    - name: Determine Spring profile
-      run: |
-        if [ "${{ github.event.inputs.spring_profile }}" != "" ]; then
-          echo "SPRING_PROFILE=${{ github.event.inputs.spring_profile }}" >> $GITHUB_ENV
-        else
-          echo "SPRING_PROFILE=dev" >> $GITHUB_ENV
-        fi
-        echo "사용할 Spring 프로필: ${{ env.SPRING_PROFILE }}"
-    
     # 빌드 아티팩트 다운로드
     - name: Download build artifact
       uses: actions/download-artifact@v4
