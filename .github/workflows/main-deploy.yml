@@ -129,7 +129,7 @@ jobs:
 
     - name: Set JAR file path
       run: |
-        echo "JAR_FILE=build/${{ needs.build.outputs.jar_file }}" >> $GITHUB_ENV
+        echo "JAR_FILE=${{ needs.build.outputs.jar_file }}" >> $GITHUB_ENV
 
     - name: echo JAR file path
       run: echo ${{ env.JAR_FILE }}
@@ -152,8 +152,9 @@ jobs:
         host: ${{ secrets.INSTANCE1_IP }}
         username: ${{ secrets.SSH_USERNAME }}
         password: ${{ secrets.SSH_PRIVATE_KEY }}
-        source: ${{ env.JAR_FILE }}
+        source: build/${{ env.JAR_FILE }}
         target: /opt/backend/jar/
+        strip_components: 1
         
     # 첫 번째 인스턴스에서 애플리케이션 재시작
     - name: Restart application on instance 1
@@ -166,7 +167,7 @@ jobs:
         script: |
           cd /opt/backend/jar
           JAR_FILE=$(basename ${{ env.JAR_FILE }})
-              
+               
           # 새 JAR 파일 복사
           sudo cp $JAR_FILE commerce-core.jar
           
@@ -182,8 +183,9 @@ jobs:
         host: ${{ secrets.INSTANCE2_IP }}
         username: ${{ secrets.SSH_USERNAME }}
         password: ${{ secrets.SSH_PRIVATE_KEY }}
-        source: ${{ env.JAR_FILE }}
+        source: build/${{ env.JAR_FILE }}
         target: /opt/backend/jar/
+        strip_components: 1
         
     # 두 번째 인스턴스에서 애플리케이션 재시작
     - name: Restart application on instance 2
